@@ -1,0 +1,23 @@
+#spring:
+#  datasource:
+#    driver-class-name: com.mysql.jdbc.Driver
+#    username: root
+#    password: GYh031125
+#  sql:
+#    init:
+#      schema-locations: jdbc:mysql://localhost:3306/Star
+#      data-locations: jdbc:mysql://localhost:3306/Star
+#      mode: always
+#server:
+#  port: 8080
+#
+#mybatis-plus:
+#  configuration:
+#    map-underscore-to-camel-case: false
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/Star
+    username: root
+    password: GYh031125
