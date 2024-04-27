@@ -6,6 +6,7 @@ import com.paul.usercenter.service.UserService;
 import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.mapper.UserMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -21,11 +22,16 @@ import java.util.regex.Pattern;
  * @createDate 2024-04-21 19:22:23
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
     @Resource
     private UserMapper userMapper;
+    /**
+     * 盐值，混淆密码
+     */
+    private static final String SALT = "paul";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -75,6 +81,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return -1;
         }
         return user.getId();
+    }
+
+    @Override
+    public User doLogin(String userAccount, String userPassword) {
+        // 校验
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            return null;
+        }
+        if (userAccount.length() < 4) {
+            return null;
+        }
+        if (userPassword.length() < 6) {
+            return null;
+        }
+
+        //校验账户包含特殊字符
+        String regex = "^[a-zA-Z0-9_]+$";
+        Pattern pattern = Pattern.compile(regex);
+
+        boolean isMatch = pattern.matcher(userAccount).matches();
+        if (isMatch) {
+            System.out.println("账户名合法");
+        } else {
+            System.out.println("账户名包含特殊字符");
+            return null;
+        }
+        //加密
+        final String SALT = "Paul";
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        //查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_account", userAccount);
+        queryWrapper.eq("user_password", encryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+        if (user == null) {
+            log.info("user login failed,userAccount cannot match userPassword");
+            return null;
+        }
+        long count = userMapper.selectCount(queryWrapper);
+        if (count > 0) {
+            return null;
+        }
+
+        return user;
     }
 
 
