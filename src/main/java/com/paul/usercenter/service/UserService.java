@@ -3,6 +3,8 @@ package com.paul.usercenter.service;
 import com.paul.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author 30420
  * @description 针对表【user(用户)】的数据库操作Service
@@ -19,11 +21,13 @@ public interface UserService extends IService<User> {
     long userRegister(String userAccount, String userPassword, String checkPassword);
 
     /**
-     *
-     * @param userAccount   用户账户
-     * @param userPassword  用户密码
+     * @param userAccount  用户账户
+     * @param userPassword 用户密码
+     * @param request 请求信息
      * @return 脱敏后的用户信息
      */
+
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     User doLogin(String userAccount, String userPassword);
 }
