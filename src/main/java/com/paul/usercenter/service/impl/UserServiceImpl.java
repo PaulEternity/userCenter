@@ -63,7 +63,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_account", userAccount); //本段用到了查询数据库，该校验往后放，
+        queryWrapper.eq("userAccount", userAccount); //本段用到了查询数据库，该校验往后放，
         long count = userMapper.selectCount(queryWrapper);              // 如果前面的判断出现错误可以省去一次调用数据库
         if (count > 0) {
             return -1;
@@ -118,8 +118,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //查询用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_account", userAccount);
-        queryWrapper.eq("user_password", encryptPassword);
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
             log.info("user login failed,userAccount cannot match userPassword");

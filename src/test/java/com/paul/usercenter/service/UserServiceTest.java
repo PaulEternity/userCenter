@@ -29,13 +29,13 @@ class UserServiceTest {
         User user = new User();
 //        user.setId(0L);
          user.setId(0L);
-        user.setUserAccount("");
+        user.setUserAccount("111");
 // rest of fields
-        user.setUserAccount("");
+//        user.setUserAccount("");
         user.setUserName("Paul");
         user.setAvatarUrl("https://www.indonesia.travel/content/dam/indtravelrevamp/en/destinations/bali-nusa-tenggara/west-nusa-tenggara/lombok/lombok1.jpg");
         user.setGender(0);
-        user.setPassword("xxx");
+        user.setPassword("123456");
         user.setPhone("123456");
         user.setEmail("556234");
         user.setUserStatus(0);
@@ -46,9 +46,9 @@ class UserServiceTest {
         user.setGender(0);
         user.setUserName("Paul");
         boolean result;
-//        result = userService.save(user);
+        result = userService.save(user);
         System.out.println(user.getId());
-//        assertTrue(result);
+        assertTrue(result);
 
     }
 
