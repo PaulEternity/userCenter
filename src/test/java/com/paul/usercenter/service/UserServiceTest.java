@@ -2,11 +2,12 @@ package com.paul.usercenter.service;
 import java.util.Date;
 
 import com.paul.usercenter.model.domain.User;
-import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class UserServiceTest {
 
-    @Autowired
+    @Resource
     private UserService userService;
 
     @Test

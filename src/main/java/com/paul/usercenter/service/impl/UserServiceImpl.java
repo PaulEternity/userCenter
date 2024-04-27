@@ -5,11 +5,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.paul.usercenter.service.UserService;
 import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.mapper.UserMapper;
-import jakarta.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import java.security.MessageDigest;
 import java.util.regex.Pattern;
 
