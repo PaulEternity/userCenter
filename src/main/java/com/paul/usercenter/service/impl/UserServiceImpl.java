@@ -83,13 +83,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user.getId();
     }
 
-    @Override
-    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
-        return null;
-    }
+//    @Override
+//    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+//        return null;
+//    }
 
     @Override
-    public User doLogin(String userAccount, String userPassword) {
+    public User userLogin(String userAccount, String userPassword,HttpServletRequest request) {
         // 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             return null;
@@ -129,8 +129,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (count > 0) {
             return null;
         }
+        //用户脱敏
+
+
 
         return user;
+    }
+    @Override
+    public User getSafetyUser(User originUser) {
+        if (originUser == null) {
+            return null;
+        }
+        User safetyUser = new User();
+        safetyUser.setId(originUser.getId());
+        safetyUser.setUserName(originUser.getUserName());
+        safetyUser.setUserAccount(originUser.getUserAccount());
+        safetyUser.setAvatarUrl(originUser.getAvatarUrl());
+        safetyUser.setGender(originUser.getGender());
+        safetyUser.setPhone(originUser.getPhone());
+        safetyUser.setEmail(originUser.getEmail());
+//        safetyUser.setPlanetCode(originUser.getPlanetCode());
+//        safetyUser.setUserRole(originUser.getUserRole());
+        safetyUser.setUserStatus(originUser.getUserStatus());
+//        safetyUser.setCreateTime(originUser.getCreateTime());
+        return safetyUser;
+    }
+
+
+    @Override
+    public User doLogin(String userAccount, String userPassword) {
+        return null;
     }
 
 

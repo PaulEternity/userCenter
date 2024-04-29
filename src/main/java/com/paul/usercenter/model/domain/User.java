@@ -9,6 +9,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 用户
@@ -16,6 +18,7 @@ import lombok.Data;
  */
 @TableName(value ="user")
 @Data
+
 public class User implements Serializable {
     /**
      * 
