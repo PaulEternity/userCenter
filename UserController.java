@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
+@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)  //允许所有端口访问
 public class UserController {
 
     @Resource
