@@ -13,6 +13,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -47,16 +48,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         //校验账户包含特殊字符
-        String regex = "^[a-zA-Z0-9_]+$";
-        Pattern pattern = Pattern.compile(regex);
-
-        boolean isMatch = pattern.matcher(userAccount).matches();
-        if (isMatch) {
-            System.out.println("账户名合法");
-        } else {
-            System.out.println("账户名包含特殊字符");
+        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        if (matcher.find()) {
             return -1;
         }
+
         //密码和校验密码相同
         if (!userPassword.equals(checkPassword)) {
             return -1;
@@ -64,7 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount); //本段用到了查询数据库，该校验往后放，
-        long count = userMapper.selectCount(queryWrapper);              // 如果前面的判断出现错误可以省去一次调用数据库
+        long count = userMapper.selectCount(queryWrapper); // 如果前面的判断出现错误可以省去一次调用数据库
         if (count > 0) {
             return -1;
         }

@@ -23,5 +23,12 @@ spring:
     password: GYh031125
 
 mybatis-plus:
-    configuration:
-      map-underscore-to-camel-case: false
+  configuration:
+    map-underscore-to-camel-case: false
+
+
+#server:
+#  port: 8080
+#  servlet:
+#    context-path: /api
+
