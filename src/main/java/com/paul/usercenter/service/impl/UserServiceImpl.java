@@ -34,6 +34,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     private static final String SALT = "paul";
 
+
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 校验
@@ -80,13 +81,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user.getId();
     }
 
-//    @Override
-//    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
-//        return null;
-//    }
 
     @Override
-    public User userLogin(String userAccount, String userPassword,HttpServletRequest request) {
+    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             return null;
@@ -99,18 +96,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         //校验账户包含特殊字符
-        String regex = "^[a-zA-Z0-9_]+$";
-        Pattern pattern = Pattern.compile(regex);
-
-        boolean isMatch = pattern.matcher(userAccount).matches();
-        if (isMatch) {
-            System.out.println("账户名合法");
-        } else {
-            System.out.println("账户名包含特殊字符");
+        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        if (matcher.find()) {
             return null;
         }
         //加密
-        final String SALT = "Paul";
+
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
         //查询用户是否存在
@@ -126,17 +118,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (count > 0) {
             return null;
         }
-        //用户脱敏
-
 
 
         return user;
     }
+
     @Override
     public User getSafetyUser(User originUser) {
-        if (originUser == null) {
-            return null;
-        }
         User safetyUser = new User();
         safetyUser.setId(originUser.getId());
         safetyUser.setUserName(originUser.getUserName());
@@ -145,18 +133,82 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setGender(originUser.getGender());
         safetyUser.setPhone(originUser.getPhone());
         safetyUser.setEmail(originUser.getEmail());
-//        safetyUser.setPlanetCode(originUser.getPlanetCode());
-//        safetyUser.setUserRole(originUser.getUserRole());
         safetyUser.setUserStatus(originUser.getUserStatus());
-//        safetyUser.setCreateTime(originUser.getCreateTime());
         return safetyUser;
     }
 
 
     @Override
-    public User doLogin(String userAccount, String userPassword) {
-        return null;
+    public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
+        // 校验
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            return null;
+        }
+        if (userAccount.length() < 4) {
+            return null;
+        }
+        if (userPassword.length() < 6) {
+            return null;
+        }
+
+        //校验账户包含特殊字符
+        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        if (matcher.find()) {
+            return null;
+        }
+        //加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        //检测用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+        //用户不存在
+        if (user == null) {
+            log.info("user login failed,userAccount cannot match userPassword");
+            return null;
+        }
+
+        //用户脱敏 隐藏敏感信息，防止数据库中的字段泄露
+        User safetyUser = getSafetyUser(user);
+
+
+        //记录用户登录态
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        return safetyUser;
+
+        /**
+         * 连接到服务器后，得到一个session(1)状态（匿名会话），返回给前端
+         * 当用户登录成功后，得到登录成功的session(2)并给session设置值（用户信息等）返回给前端一个
+         * 设置cookie的命令，前端接收到命令行，设置cookie，保存到浏览器内
+         * 前端再次请求后端时，必须是相同的域名，在请求头中带上cookie
+         * 后端拿到前端传来的cookie，找到对应session
+         * 后端从session中可以取出基于session存储的变量（登录信息、登录名等）
+         */
+
     }
+
+//    @Override
+//    public User getSafetyUser(User originUser) {
+//        User user = new User();
+//        user.setId(originUser.getId());
+//        user.setUserAccount(originUser.getUserAccount());
+//        user.setUserName(originUser.getUserName());
+//        user.setAvatarUrl(originUser.getAvatarUrl());
+//        user.setGender(originUser.getGender());
+//        user.setPassword(originUser.getPassword());
+//        user.setPhone(originUser.getPhone());
+//        user.setEmail(originUser.getEmail());
+//        user.setUserStatus(originUser.getUserStatus());
+//        user.setCreatTime(originUser.getCreatTime());
+//        user.setUpdateTime(originUser.getUpdateTime());
+//        user.setIsDelete(originUser.getIsDelete());
+//        user.setUserRole(originUser.getUserRole());
+//        return user;
+//
+//    }
 
 
 }

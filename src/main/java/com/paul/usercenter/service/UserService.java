@@ -13,6 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 public interface UserService extends IService<User> {
 
     /**
+     * 用户登录态键
+     * 通过登录态找到唯一一个值
+     */
+     String USER_LOGIN_STATE = "userLoginState";
+
+    /**
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
@@ -23,13 +29,18 @@ public interface UserService extends IService<User> {
     /**
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request 请求信息
+     * @param request      请求信息
      * @return 脱敏后的用户信息
      */
 
     User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
+    /**
+     * 用户脱敏
+     * @param originUser
+     * @return
+     */
     User getSafetyUser(User originUser);
 
-    User doLogin(String userAccount, String userPassword);
+    User doLogin(String userAccount, String userPassword, HttpServletRequest request);
 }

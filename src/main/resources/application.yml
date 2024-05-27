@@ -21,10 +21,17 @@ spring:
     url: jdbc:mysql://localhost:3306/Star
     username: root
     password: GYh031125
+  session:
+    timeout: 86400  #设置session超时时间 一天86400秒
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除字段名
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
 
 #不知道需不需要解除注释
 #server:
