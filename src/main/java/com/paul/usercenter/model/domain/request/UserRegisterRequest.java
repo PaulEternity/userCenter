@@ -54,4 +54,6 @@ public class UserRegisterRequest implements Serializable {
     public String toString() {
         return "UserRegisterRequest{serialVersionUID = " + serialVersionUID + ", userAccount = " + userAccount + ", userPassword = " + userPassword + ", checkPassword = " + checkPassword + "}";
     }
+
+    private String planetCode;
 }
