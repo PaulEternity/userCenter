@@ -33,9 +33,8 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值
       logic-not-delete-value: 0 # 逻辑未删除值
 
-##不知道需不需要解除注释
-#server:
-#  port: 8080
-#  servlet:
-#    context-path: /api
+server:
+  port: 8080
+  servlet:
+    context-path: /api
 
