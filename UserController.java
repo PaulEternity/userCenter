@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,7 @@ import static com.paul.usercenter.contant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
-//@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)  //允许所有端口访问
+@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
 public class UserController {
 
     @Resource
