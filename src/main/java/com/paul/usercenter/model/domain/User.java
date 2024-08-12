@@ -72,6 +72,12 @@ public class User implements Serializable {
     /**
      * 
      */
+
+    private String tags;
+    /**
+     * 标签列表
+     */
+
     @TableLogic
     private Integer isDelete;
 

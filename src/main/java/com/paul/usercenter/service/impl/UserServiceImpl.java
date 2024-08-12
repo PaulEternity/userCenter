@@ -2,6 +2,8 @@ package com.paul.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.paul.usercenter.common.ErrorCode;
 import com.paul.usercenter.exception.BusinessException;
 import com.paul.usercenter.service.UserService;
@@ -11,12 +13,18 @@ import com.paul.usercenter.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author 30420
@@ -69,7 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount", userAccount); //本段用到了查询数据库，该校验往后放，
         long count = userMapper.selectCount(queryWrapper); // 如果前面的判断出现错误可以省去一次调用数据库
         if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号重复");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
         }
 
         //编号不能重复
@@ -77,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("planetCode", planetCode); //本段用到了查询数据库，该校验往后放，
         count = userMapper.selectCount(queryWrapper); // 如果前面的判断出现错误可以省去一次调用数据库
         if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"编号重复");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "编号重复");
         }
 
         //加密
@@ -91,7 +99,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"数据保存错误");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "数据保存错误");
         }
         return user.getId();
     }
@@ -150,6 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setEmail(originUser.getEmail());
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setPlanetCode(originUser.getPlanetCode());
+        safetyUser.setTags(originUser.getTags());
         return safetyUser;
     }
 
@@ -212,26 +221,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return 0;
     }
 
+    @Override
+    public List<User> searchUsersByTags(List<String> tagNameList) {
+        //标签查询所有用户
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
 
-//    @Override
-//    public User getSafetyUser(User originUser) {
-//        User user = new User();
-//        user.setId(originUser.getId());
-//        user.setUserAccount(originUser.getUserAccount());
-//        user.setUserName(originUser.getUserName());
-//        user.setAvatarUrl(originUser.getAvatarUrl());
-//        user.setGender(originUser.getGender());
-//        user.setPassword(originUser.getPassword());
-//        user.setPhone(originUser.getPhone());
-//        user.setEmail(originUser.getEmail());
-//        user.setUserStatus(originUser.getUserStatus());
-//        user.setCreatTime(originUser.getCreatTime());
-//        user.setUpdateTime(originUser.getUpdateTime());
-//        user.setIsDelete(originUser.getIsDelete());
-//        user.setUserRole(originUser.getUserRole());
-//        return user;
+        //在内存中判断是否包含要求的标签
+        return userList.stream().filter(user -> {
+            String tagsStr = user.getTags();
+            if (StringUtils.isNotBlank(tagsStr)) {
+                return false;
+            }
+            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {
+            }.getType()); //反序列化
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>()); //消除分支
+            for (String tagName : tempTagNameSet) {
+                if (!tagNameList.contains(tagName)) {
+                    return false;
+                }
+            }
+//            gson.toJson(tempTagNameList); 序列化，返回一个字符串
+            for (String tagName : tempTagNameSet) {
+                if (!tempTagNameSet.contains(tagName)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map((this::getSafetyUser)).collect(Collectors.toList());
+//        for (User user : userList) {
+//            String tagsStr = user.getTags();
+//            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType()); //反序列化
+////            gson.toJson(tempTagNameList); 序列化，返回一个字符串
+//            for (String tagName : tempTagNameSet) {
+//                if (!tempTagNameSet.contains(tagName)){
 //
-//    }
+//            }
+//        }
+//        return userList.stream().map((this::getSafetyUser)).collect(Collectors.toList());
+
+    }
 
 
 }
