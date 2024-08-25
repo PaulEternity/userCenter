@@ -15,10 +15,12 @@ import com.paul.usercenter.model.domain.request.UserLoginRequest;
 import com.paul.usercenter.model.domain.request.UserRegisterRequest;
 import com.paul.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +33,8 @@ import static com.paul.usercenter.contant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
+//@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
+@CrossOrigin(origins = {"http://localhost:5173/"})
 public class UserController {
 
     @Resource
@@ -100,6 +103,15 @@ public class UserController {
         List<User> userList = userService.list(queryWrapper);
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
+    }
+
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+    List<User> userList = userService.searchUsersByTags(tagNameList);
+    return ResultUtils.success(userList);
     }
 
     @PostMapping("/delete")
