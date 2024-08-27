@@ -114,6 +114,19 @@ public class UserController {
     return ResultUtils.success(userList);
     }
 
+    @PostMapping("/update")
+    public BaseResponse<Integer> userUpdate( User user , HttpServletRequest request) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        int result = userService.updateUser(user,loginUser);
+        return ResultUtils.success(result);
+    }
+
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (isAdmin(request)) {
