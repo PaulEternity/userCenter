@@ -41,7 +41,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public BaseResponse<Long>userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -52,13 +52,13 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
             return null;
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword,planetCode);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
 //        return new BaseResponse<>(0,result,"ok");
         return ResultUtils.success(result);
     }
 
     @PostMapping("/login")
-    public BaseResponse<User>userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             return null;
         }
@@ -88,7 +88,6 @@ public class UserController {
     }
 
 
-
     @PostMapping("/search")
     public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
 
@@ -107,15 +106,15 @@ public class UserController {
 
     @GetMapping("/search/tags")
     public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagNameList) {
-        if (CollectionUtils.isEmpty(tagNameList)){
+        if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-    List<User> userList = userService.searchUsersByTags(tagNameList);
-    return ResultUtils.success(userList);
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList);
     }
 
     @PostMapping("/update")
-    public BaseResponse<Integer> userUpdate( User user , HttpServletRequest request) {
+    public BaseResponse<Integer> userUpdate(@RequestBody User user, HttpServletRequest request) {
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -123,7 +122,7 @@ public class UserController {
         if (loginUser == null) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
-        int result = userService.updateUser(user,loginUser);
+        int result = userService.updateUser(user, loginUser);
         return ResultUtils.success(result);
     }
 
