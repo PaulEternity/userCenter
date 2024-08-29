@@ -34,7 +34,7 @@ import static com.paul.usercenter.contant.UserConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 //@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
-@CrossOrigin(origins = {"http://localhost:5173/"})
+@CrossOrigin(origins = {"http://localhost:5174"}, allowCredentials = "true")
 public class UserController {
 
     @Resource
@@ -60,38 +60,34 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        String checkPassword = userLoginRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
         User user = userService.userLogin(userAccount, userPassword, request);
-//        return new BaseResponse<>(0,user,"ok");
         return ResultUtils.success(user);
     }
 
-
-    @PostMapping("/current")  //获取当前用户登录信息
+    @GetMapping("/current")  //获取当前用户登录信息
     public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NO_LOGIN);
         }
-        long userid = currentUser.getId();
-        User user = userService.getById(userid);
-//        return userService.getSafetyUser(user);
-        return ResultUtils.success(user);
+        long userId = currentUser.getId();
+        User user = userService.getById(userId);
+        User safetyUser = userService.getSafetyUser(user);
+        return ResultUtils.success(safetyUser);
     }
 
-
-    @PostMapping("/search")
+    @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
 
-        if (isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
             //非管理员返回空列表
         }
@@ -119,24 +115,21 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
+//        if (loginUser == null) {
+//            throw new BusinessException(ErrorCode.NO_AUTH);
+//        }
         int result = userService.updateUser(user, loginUser);
         return ResultUtils.success(result);
     }
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
-        if (isAdmin(request)) {
-            return null;
+        if (!userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
-        if (isAdmin(request)) {
-            return null;
-        }
-        if (id <= 0) {
 
-            return null;
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         boolean b = userService.removeById(id);
         return ResultUtils.success(b);
@@ -145,7 +138,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(@RequestBody HttpServletRequest request) {
         if (request == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         int result = userService.userLogout(request);
         return ResultUtils.success(result);
