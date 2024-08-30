@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ import static com.paul.usercenter.contant.UserConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 //@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
-@CrossOrigin(origins = {"http://localhost:5174"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
 public class UserController {
 
     @Resource
@@ -95,6 +94,14 @@ public class UserController {
         if (StringUtils.isNotBlank(userName)) { //不为空，空格，
             queryWrapper.like("username", userName); //允许包含输入条件 模糊查询
         }
+        List<User> userList = userService.list(queryWrapper);
+        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(list);
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponse<List<User>> recommendUsers(String userName, HttpServletRequest request) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         List<User> userList = userService.list(queryWrapper);
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
