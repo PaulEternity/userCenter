@@ -6,7 +6,6 @@ package com.paul.usercenter.controller;
  */
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.paul.usercenter.common.BaseResponse;
 import com.paul.usercenter.common.ErrorCode;
 import com.paul.usercenter.common.ResultUtils;
