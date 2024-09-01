@@ -6,6 +6,7 @@ package com.paul.usercenter.controller;
  */
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.paul.usercenter.common.BaseResponse;
 import com.paul.usercenter.common.ErrorCode;
 import com.paul.usercenter.common.ResultUtils;
@@ -15,6 +16,7 @@ import com.paul.usercenter.model.domain.request.UserLoginRequest;
 import com.paul.usercenter.model.domain.request.UserRegisterRequest;
 import com.paul.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -100,11 +102,12 @@ public class UserController {
     }
 
     @GetMapping("/recommend")
-    public BaseResponse<List<User>> recommendUsers(String userName, HttpServletRequest request) {
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        List<User> userList = userService.list(queryWrapper);
-        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtils.success(list);
+        Page<User> userList = userService.page(new Page<>(pageNum,pageSize), queryWrapper);
+//        List<User> userList = userService.list(queryWrapper);
+//        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(userList);
     }
 
     @GetMapping("/search/tags")
