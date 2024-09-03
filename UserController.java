@@ -14,8 +14,13 @@ import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.model.domain.request.UserLoginRequest;
 import com.paul.usercenter.model.domain.request.UserRegisterRequest;
 import com.paul.usercenter.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +37,7 @@ import static com.paul.usercenter.contant.UserConstant.USER_LOGIN_STATE;
  * 用户接口
  */
 @RestController
+@Slf4j
 @RequestMapping("/user")
 //@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 36000)
 @CrossOrigin(origins = {"http://localhost:5173"}, allowCredentials = "true")
@@ -39,6 +45,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Qualifier("redisTemplate")
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -102,11 +111,25 @@ public class UserController {
 
     @GetMapping("/recommend")
     public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        String redisKey = String.format("match:user:recommend:%s", loginUser.getId());
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        //加上缓存部分，有缓存先读缓存
+        Page<User> userPage = (Page<User>) valueOperations.get(redisKey);
+        if (userPage != null) {
+            //缓存里有就直接返回
+            return ResultUtils.success(userPage);
+        }
+        //没有缓存正常查数据库
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        Page<User> userList = userService.page(new Page<>(pageNum,pageSize), queryWrapper);
-//        List<User> userList = userService.list(queryWrapper);
-//        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return ResultUtils.success(userList);
+        userPage = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        //写缓存
+        try {
+            valueOperations.set(redisKey, userPage);
+        } catch (Exception e) {
+            log.error("Redis set key error", e);
+        }
+        return ResultUtils.success(userPage);
     }
 
     @GetMapping("/search/tags")
