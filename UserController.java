@@ -46,7 +46,7 @@ public class UserController {
     @Resource
     private UserService userService;
     @Qualifier("redisTemplate")
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
 
     @PostMapping("/register")
