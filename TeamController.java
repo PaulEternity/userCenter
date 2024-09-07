@@ -12,15 +12,18 @@ import com.paul.usercenter.common.ErrorCode;
 import com.paul.usercenter.common.ResultUtils;
 import com.paul.usercenter.exception.BusinessException;
 import com.paul.usercenter.model.domain.Team;
+import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.model.dto.TeamQuery;
+import com.paul.usercenter.model.request.TeamAddRequest;
+import com.paul.usercenter.model.vo.TeamUserVO;
 import com.paul.usercenter.service.TeamService;
 import com.paul.usercenter.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -40,16 +43,15 @@ public class TeamController {
     private TeamService teamService;
 
     @PostMapping("/add")
-    public BaseResponse<Long> addTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request) {
+        if (teamAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
-
         }
-        boolean save = teamService.save(team); //增删改查直接采用mybatisPlus中自带的简单方法进行操作
-        if (!save) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "插入失败");
-        }
-        return ResultUtils.success(team.getId());
+        User loginUser = userService.getLoginUser(request);
+        Team team = new Team();
+        BeanUtils.copyProperties(teamAddRequest, team);
+        long teamId = teamService.addTeam(team, loginUser);
+        return ResultUtils.success(teamId);
     }
 
     @PostMapping("/delete")
@@ -88,20 +90,32 @@ public class TeamController {
         return ResultUtils.success(team);
     }
 
+//    @GetMapping("/list")
+//    public BaseResponse<List<Team>> listTeam(TeamQuery teamQuery) {
+//        if (teamQuery == null) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        Team team = new Team();
+//        try {
+//            BeanUtils.copyProperties(team, teamQuery);
+//        } catch (BeansException e) {
+//            throw new RuntimeException(e);
+//        }
+////        team.setName(teamQuery.getName());
+//        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+//        List<Team> teamList = teamService.list(queryWrapper);
+//        return ResultUtils.success(teamList);
+//
+//    }
+
     @GetMapping("/list")
-    public BaseResponse<List<Team>> listTeam(TeamQuery teamQuery) {
+    public BaseResponse<List<TeamUserVO>> listTeam(TeamQuery teamQuery, HttpServletRequest request) {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Team team = new Team();
-        try {
-            BeanUtils.copyProperties(team, teamQuery);
-        } catch (BeansException e) {
-            throw new RuntimeException(e);
-        }
-//        team.setName(teamQuery.getName());
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
-        List<Team> teamList = teamService.list(queryWrapper);
+
+        boolean isAdmin = userService.isAdmin(request);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery,isAdmin);
         return ResultUtils.success(teamList);
 
     }
@@ -112,10 +126,10 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Team team = new Team();
-        BeanUtils.copyProperties(team, teamQuery);
-        Page<Team> page = new Page<>(teamQuery.getPageNum(),teamQuery.getPageSize());
+        BeanUtils.copyProperties(teamQuery, team);
+        Page<Team> page = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        Page<Team> teamList = teamService.page(page,queryWrapper);
+        Page<Team> teamList = teamService.page(page, queryWrapper);
         return ResultUtils.success(teamList);
 
     }
