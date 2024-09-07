@@ -15,6 +15,7 @@ import com.paul.usercenter.model.domain.Team;
 import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.model.dto.TeamQuery;
 import com.paul.usercenter.model.request.TeamAddRequest;
+import com.paul.usercenter.model.request.TeamUpdateRequest;
 import com.paul.usercenter.model.vo.TeamUserVO;
 import com.paul.usercenter.service.TeamService;
 import com.paul.usercenter.service.UserService;
@@ -67,11 +68,12 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        boolean result = teamService.updateById(team);
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.updateTeam(teamUpdateRequest, loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
         }
@@ -90,24 +92,6 @@ public class TeamController {
         return ResultUtils.success(team);
     }
 
-//    @GetMapping("/list")
-//    public BaseResponse<List<Team>> listTeam(TeamQuery teamQuery) {
-//        if (teamQuery == null) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        Team team = new Team();
-//        try {
-//            BeanUtils.copyProperties(team, teamQuery);
-//        } catch (BeansException e) {
-//            throw new RuntimeException(e);
-//        }
-////        team.setName(teamQuery.getName());
-//        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
-//        List<Team> teamList = teamService.list(queryWrapper);
-//        return ResultUtils.success(teamList);
-//
-//    }
-
     @GetMapping("/list")
     public BaseResponse<List<TeamUserVO>> listTeam(TeamQuery teamQuery, HttpServletRequest request) {
         if (teamQuery == null) {
@@ -115,7 +99,7 @@ public class TeamController {
         }
 
         boolean isAdmin = userService.isAdmin(request);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQuery,isAdmin);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
         return ResultUtils.success(teamList);
 
     }
