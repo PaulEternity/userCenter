@@ -12,7 +12,6 @@ import com.paul.usercenter.common.DeleteRequest;
 import com.paul.usercenter.common.ErrorCode;
 import com.paul.usercenter.common.ResultUtils;
 import com.paul.usercenter.exception.BusinessException;
-import com.paul.usercenter.mapper.TeamMapper;
 import com.paul.usercenter.model.domain.Team;
 import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.model.domain.UserTeam;
@@ -140,6 +139,14 @@ public class TeamController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        //查询已加入队伍人数
+        QueryWrapper<UserTeam> userTeamJoinQueryWrapper = new QueryWrapper<>();
+        userTeamJoinQueryWrapper.in("teamId",teamIdList);
+        List<UserTeam> userTeamList = userTeamService.list(userTeamJoinQueryWrapper);
+        Map<Long,List<UserTeam>>teamIdUserTeam = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        teamList.forEach(team ->{
+            team.setHasJoinNum(teamIdUserTeam.getOrDefault(team.getId(),new ArrayList<>()).size());
+        });
 
         return ResultUtils.success(teamList);
 
