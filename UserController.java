@@ -13,6 +13,7 @@ import com.paul.usercenter.exception.BusinessException;
 import com.paul.usercenter.model.domain.User;
 import com.paul.usercenter.model.request.UserLoginRequest;
 import com.paul.usercenter.model.request.UserRegisterRequest;
+import com.paul.usercenter.model.vo.UserVO;
 import com.paul.usercenter.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +59,7 @@ public class UserController {
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_NULL_ERROR);
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
 //        return new BaseResponse<>(0,result,"ok");
@@ -170,6 +171,16 @@ public class UserController {
         }
         int result = userService.userLogout(request);
         return ResultUtils.success(result);
+    }
+
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num , HttpServletRequest request) {
+        if(num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        return ResultUtils.success(userService.matchUsers(num, user));
+
     }
 
     /**
